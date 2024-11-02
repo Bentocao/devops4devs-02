@@ -1,0 +1,87 @@
+# deploy do postgre
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgre
+  labels:
+    app: postgre
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgre
+  template:
+    metadata:
+      labels:
+        app: postgre
+    spec:
+      containers:
+        - name: postgre
+          image: postgres:13.1
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: reviewfilmes
+            - name: POSTGRES_PASSWORD
+              value: Passw0rd@2024!
+            - name: POSTGRES_DB
+              value: reviewfilmes
+          resources:
+            limits:
+              cpu: 64m
+              memory: 256Mi
+---
+# service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgre
+spec:
+  selector:
+    app: postgre
+  ports:
+    - port: 5432
+---
+# deploy da aplicação web
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reviewfilmes
+  labels:
+    app: reviewfilmes
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reviewfilmes
+  template:
+    metadata:
+      labels:
+        app: reviewfilmes
+    spec:
+      containers:
+        - name: reviewfilmes
+          image: fernandoguara/review-filmes:v1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ASPNETCORE_HTTP_PORTS
+              value: "8080"
+            - name: ConnectionStrings__DefaultConnection
+              value: "host=postgre;database=reviewfilmes;Username=reviewfilmes;Password=Passw0rd@2024!"
+---
+# service
+apiVersion: v1
+kind: Service
+metadata:
+  name: reviewfilmes
+spec:
+  selector:
+    app: reviewfilmes
+  ports:
+    - port: 80
+      targetPort: 8080
+      #nodePort: 30000
+  type: LoadBalancer
+        
