@@ -25,7 +25,8 @@ jobs:
           push: true
           file: ./src/Review-Filmes.Web/Dockerfile
           tags: |
-            user/app:latest
+            fernandoguara/review-filmes:v${{ github.run_number }}
+            fernandoguara/review-filmes:latest
 
   CD:
     runs-on: ubuntu-latest
